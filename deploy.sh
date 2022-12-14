@@ -7,7 +7,7 @@ fail() {
 
 echo "begin to deploy Redis Cluster on GKE"
 
-if [[ $(gcloud container clusters describe $name --zone $zone --format json | jq .status) == 'RUNNING' ]]
+if [[ $(gcloud container clusters describe $name --zone $zone --format json | jq .status) == '"RUNNING"' ]]
 then
     echo "GKE cluster is exsited. skip."
 else
