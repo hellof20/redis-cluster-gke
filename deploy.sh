@@ -5,17 +5,19 @@ fail() {
     exit 1
 }
 
-echo "begin to deploy GKE using gcloud ..."
+echo "begin to deploy Redis Cluster on GKE"
 
-echo "creating GKE cluster ..."
-gcloud container clusters create $name \
-    --cluster-version=1.23 \
-    --no-enable-autoupgrade \
-    --machine-type=e2-standard-4 \
-    --num-nodes=1 \
-    --network $network \
-    --zone $zone \
-    --project=$project_id || fail "Error: create GKE Cluster failed"
+if [[ $(gcloud container clusters describe $name --zone $zone --format json | jq .status) != 'Running' ]]; do
+    echo "creating GKE cluster ..."
+    gcloud container clusters create $name \
+        --cluster-version=1.23 \
+        --no-enable-autoupgrade \
+        --machine-type=e2-standard-4 \
+        --num-nodes=1 \
+        --network $network \
+        --zone $zone \
+        --project=$project_id || fail "Error: create GKE Cluster failed"
+done
 
 echo "get gke credential"
 gcloud container clusters get-credentials $name \
