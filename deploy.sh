@@ -1,5 +1,10 @@
 #!/bin/bash
 
+fail() {
+    echo "$@"
+    exit 1
+}
+
 echo "begin to deploy GKE using gcloud ..."
 
 echo "creating GKE cluster ..."
@@ -10,15 +15,13 @@ gcloud container clusters create $name \
     --num-nodes=1 \
     --network $network \
     --zone $zone \
-    --project=$project_id
-echo "GKE cluster done."
-
+    --project=$project_id || fail "Error: create GKE Cluster failed"
 
 echo "get gke credential"
 gcloud container clusters get-credentials $name \
     --zone $zone \
     --project=$project_id \
-    --quiet
+    --quiet > /dev/null || fail "Error: get GKE Cluster credential failed"
 
 echo "deploying redis cluster..."
 helm repo add my-repo https://charts.bitnami.com/bitnami
@@ -35,6 +38,6 @@ until [[ $(kubectl get svc my-release-redis-cluster -o jsonpath='{.status.loadBa
     fi
 done
 
-redis_cluster_ip=$(kubectl -n vvp get svc vvp-svc -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+redis_cluster_ip=$(kubectl get svc my-release-redis-cluster -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
 echo "redis-cli -c -h $redis_cluster_ip -a $redis_password"
