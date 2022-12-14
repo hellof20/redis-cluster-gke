@@ -9,7 +9,6 @@ gcloud container clusters create $name \
     --machine-type=e2-standard-4 \
     --num-nodes=1 \
     --network $network \
-    --subnetwork $subnetwork \
     --zone $zone \
     --project=$project_id
 echo "GKE cluster done."
@@ -35,6 +34,7 @@ until [[ $(kubectl get svc my-release-redis-cluster -o jsonpath='{.status.loadBa
         return 1
     fi
 done
+
 redis_cluster_ip=$(kubectl -n vvp get svc vvp-svc -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
 echo "redis-cli -c -h $redis_cluster_ip -a $redis_password"
