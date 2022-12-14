@@ -7,7 +7,7 @@ fail() {
 
 echo "begin to deploy Redis Cluster on GKE"
 
-if [[ $(gcloud container clusters describe $name --zone $zone --format json | jq .status) != 'Running' ]]; do
+if [[ $(gcloud container clusters describe $name --zone $zone --format json | jq .status) != 'RUNNING' ]]; then
     echo "creating GKE cluster ..."
     gcloud container clusters create $name \
         --cluster-version=1.23 \
@@ -17,7 +17,8 @@ if [[ $(gcloud container clusters describe $name --zone $zone --format json | jq
         --network $network \
         --zone $zone \
         --project=$project_id || fail "Error: create GKE Cluster failed"
-done
+    else echo "GKE cluster is exsited. skip"
+fi
 
 echo "get gke credential"
 gcloud container clusters get-credentials $name \
